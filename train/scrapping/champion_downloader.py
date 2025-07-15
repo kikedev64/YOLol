@@ -2,17 +2,28 @@ import requests
 import shutil
 import os
 import json
-
-
 class ChampionDownloader:
+    """
+    Downloads champion data from the Community Dragon CDN.
+    It fetches champion abilities and square icons, saving them in a structured directory.
+    """
     
     def __init__(self,parent_path):
+        """
+        Initializes the downloader with the parent path where data will be saved.
+        
+        Parameters:
+        ----------
+        parent_path (str): 
+            The directory where the downloaded champion data will be saved.
+        """
+        
         self.parent_path = parent_path
         self.GENERIC = "generic"
         self.GENERIC_PATH = f"./{parent_path}/default/"
         
         self.CHARACTERS = self.get_champions()
-        self.CHARACTER_NUMBER = self.CHARACTERS.__len__
+        self.CHARACTER_NUMBER = self.CHARACTERS.__len__()
         self.count = 0
         
         # Generic data
@@ -29,6 +40,14 @@ class ChampionDownloader:
         pass
 
     def download_abilities(self,champion):
+        """
+        Downloads the abilities of a champion and saves them in a structured directory.
+        
+        Parameters:
+        ----------
+        champion (str): 
+            The name of the champion whose abilities are to be downloaded.
+        """
         self.count += 1
         route_path = f"./{self.parent_path}/{champion}"
         path_abilitys = os.path.join(route_path, "abilitys")
@@ -57,6 +76,16 @@ class ChampionDownloader:
         self.download_square(champion)
         
     def download_square(self,champion,generic=False):
+        """
+        Downloads the square icon of a champion and saves it in the specified directory.
+        Parameters:
+        ----------
+        champion (str): 
+            The name of the champion whose square icon is to be downloaded.
+        generic (bool):
+            If True, saves the icon in the generic directory.
+        """
+        
         square = requests.get(f"https://cdn.communitydragon.org/latest/champion/{champion}/square",stream=True)
         
         if square.status_code == 200:
@@ -66,14 +95,24 @@ class ChampionDownloader:
     
     
     def generic_data(self):
+        """
+        Downloads generic champion data and saves it in the generic directory.
+        """
+        
         os.makedirs(self.GENERIC_PATH,exist_ok=True)
         self.download_square(self.GENERIC,generic=True)
         
     def get_champions(self):
+        """
+        Retrieves the list of champions from a local JSON file.
+        
+        Returns:
+        -------
+        list: 
+            A list of champion names in lowercase.
+        """
         with open('./assets/characters.json','r',encoding="utf-8") as character_json:
             data = json.load(character_json)
         
         characters = [char.lower() for char in data["data"].keys()]
         return list(characters)
-
-# ChampionDownloader
