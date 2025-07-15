@@ -3,7 +3,7 @@ from others_downloader import OtherDownloader
 import os
 import argparse
 
-def main(parent_path):
+def main(parent_path="./data_train"):
     """
     Main function to initiate the downloading of various game assets.
     It sets up the necessary directories and calls the download methods for different asset types.
