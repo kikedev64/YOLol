@@ -65,7 +65,7 @@ class ChampionDownloader:
         for ability, response in abilitys:
             print(f"Descargando habilidad {ability}...")
             if response.status_code == 200:
-                file_path = os.path.join(path_abilitys, f"{ability}.png")
+                file_path = os.path.join(path_abilitys, f"{ability}_{champion}.png")
                 with open(file_path, 'wb') as out_file:
                     shutil.copyfileobj(response.raw, out_file)
                 response.close()

@@ -6,6 +6,7 @@ It includes:
 - Champion square and abilitys icons
 - Summoner icons.
 - Minimap pings and icons.
+- Another importants elements
 
 🚀 How to Use
 

@@ -208,3 +208,8 @@ __marimo__/
 
 # Data train
 data_train/
+
+# Ignore images or class train
+*.png
+!shadow_map.png
+*.txt
