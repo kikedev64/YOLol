@@ -5,12 +5,12 @@ from ultralytics import YOLO
 
 def main():
     # Carga tu modelo entrenado
-    model = YOLO("C:/Users/fxkik/Documents/LeagueIA/train/train_model/prepared_data/model_trained/runs/LeagueIAModel/weights/best.pt")
+    model = YOLO("E:/Repositorios/LeagueIA/train/train_model/prepared_data/model_trained/runs/LeagueIAModel/weights/best.pt")
 
     # Crear ventana redimensionable con tamaño inicial 1280x720 (16:9)
     win_name = "Detección Minimap LoL"
     cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(win_name, 1280, 720)
+    cv2.resizeWindow(win_name, 800, 800)
     cv2.setWindowProperty(win_name, cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_KEEPRATIO)
 
     # Inicializa captura de pantalla con mss

@@ -34,9 +34,11 @@ def main(parent_path):
     # Downloading minimap icons
     OtherDownloader(f"{parent_path}/minimap/pings",kind="minimap_pings").downloader()
 
+    # Downloading characters
     print("\nCampeones\n")
     ChampionDownloader(f"{parent_path}/characters")
      
+    # Downloading minimap
     print("\nUtils\n")
     print("Descargando minimapa...")
     download("https://static.wikia.nocookie.net/leagueoflegends/images/0/04/Summoner%27s_Rift_Minimap.png/revision/latest?cb=20240527145536",f"{parent_path}/utils","minimap.png")

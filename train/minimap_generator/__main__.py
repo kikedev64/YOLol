@@ -10,6 +10,40 @@ import numpy as np
 from tqdm import tqdm
 
 class Minimap:
+    """
+    Class to generate a minimap for training a computer vision model.
+    It includes methods to load icons, create a minimap with various game elements,
+    and save the minimap with YOLO format labels.
+    
+    Attributes:
+    ----------
+    minimap (Image): 
+        The base minimap image.
+    shadow_map (Image):
+        The shadow map image used for war zones.
+    position_json_map_file (str):
+        Path to the JSON file containing positions of items on the map.
+    icons_dir (str):
+        Directory containing icons for various game elements.
+    source_square (str):
+        Directory containing champion icons.
+    destination_square (str):
+        Directory where champion icons will be saved.
+    extract_s (bool):
+        If True, extracts champion icons from the source directory.
+    yolo_output (str):
+        Path to save YOLO format labels.
+    yolo_labels (list):
+        List to store YOLO labels.
+    character_dir (dict):
+        Dictionary mapping champion names to their IDs.
+    elements_in_map (list):
+        List of elements already placed on the minimap.
+    objects_in_image (list):
+        List of objects placed on the minimap with their properties.
+    position_item_dict (dict):
+        Dictionary mapping item names to their positions and sizes on the minimap.
+    """
     def __init__(self,
                  minimap='./utils/minimap.png',
                  shadow_map="./utils/shadow_map.png",
@@ -19,8 +53,29 @@ class Minimap:
                  destination_square="./utils/character_items",
                  extract_s=False,
                  yolo_output="./utils/map_labels.txt"):
+        """
+        Initializes the Minimap class with the given parameters.
+
+        Parameters:
+        ----------
+        minimap (str): 
+            Path to the base minimap image.
+        shadow_map (str):
+            Path to the shadow map image used for war zones.
+        position_json_map_file (str):
+            Path to the JSON file containing positions of items on the map.
+        icons_dir (str):
+            Directory containing icons for various game elements.
+        source_square (str):
+            Directory containing champion icons.
+        destination_square (str):
+            Directory where champion icons will be saved.
+        extract_s (bool):
+            If True, extracts champion icons from the source directory.
+        yolo_output (str):
+            Path to save YOLO format labels.
+        """
         
-        # Parámetros y carga inicial
         self.minimap = Image.open(minimap)
         self.elements_in_map = []
         self.shadow_map = Image.open(shadow_map)
@@ -31,10 +86,17 @@ class Minimap:
         self.yolo_output = yolo_output
         self.yolo_labels = []
         self.character_dir = {}
+        
+        
+        # if extract_s is True, it will extract the champion icons from the source directory.
         if extract_s:
             self.extract_squares()
+        
+        """
+        Initial flow, load the position_item_dict from the JSON file,
+        load the character directory, and create the items map.
+        """
         self.load_character_dir()
-        # Flujo principal
         self.load_pos_item_map()
         self.create_items_map()
         self.war_zones()
@@ -43,13 +105,19 @@ class Minimap:
         
 
     def war_zones(self, count=5):
+        """
+        Applies a shadow effect to random areas of the minimap to simulate war zones.
+        
+        Parameters:
+        ----------
+        count (int):
+            Number of war zones to apply.
+        """
         W, H = self.minimap.size
 
-        # 2. Capa negra completamente opaca
-        fog_color = (0, 0, 0, 204)  # sombra de guerra opaca pero semitransparente
+        fog_color = (0, 0, 0, 204)
         fog = Image.new("RGBA", (W, H), fog_color)
 
-        # 3. Crear máscara donde se ve el mapa (zonas blancas)
         visibility_mask = Image.new("L", (W, H), 0)
         draw = ImageDraw.Draw(visibility_mask)
 
@@ -57,7 +125,6 @@ class Minimap:
             cx = item_map["x"] + item_map["width"] // 2
             cy = item_map["y"] + item_map["height"] // 2
 
-            # Radio de visión visible (más grande y difuso)
             vision_radius = int(max(item_map["width"], item_map["height"]) * 0.8)
 
             draw.ellipse(
@@ -65,29 +132,47 @@ class Minimap:
                 fill=255
             )
 
-        # 4. Difumina la máscara para transiciones suaves
         visibility_mask = visibility_mask.filter(ImageFilter.GaussianBlur(radius=15))
 
-        # 5. Invertimos la máscara (zonas negras = se aplica sombra)
         inverted_mask = ImageChops.invert(visibility_mask)
         
-        # Escalar la máscara para que el valor máximo sea 204 (80% de opacidad)
         inverted_mask = inverted_mask.point(lambda p: int(p * 0.9))
 
-
-        # 6. Sustituimos el alpha de la sombra por la máscara invertida
         fog.putalpha(inverted_mask)
 
-        # 7. Combinamos mapa + sombra de guerra parcial
         self.minimap = Image.alpha_composite(self.minimap.convert("RGBA"), fog)
 
 
 
     def load_pos_item_map(self):
+        """
+        Loads the position of items on the map from a JSON file.
+        """
+
         with open(self.position_json_map_file, "r") as f:
             self.position_item_dict = json.load(f)
     
     def insert_element(self,x,y,width,height,iconmap,name,resize=False):
+        """
+        Inserts an icon into the minimap at the specified position.
+
+        Parameters:
+        ----------
+        x (int):
+            X-coordinate where the icon will be placed.
+        y (int):
+            Y-coordinate where the icon will be placed.
+        width (int):
+            Width of the icon.
+        height (int):
+            Height of the icon.
+        iconmap (Image):
+            The icon image to be placed on the minimap.
+        name (str):
+            Name of the icon, used for labeling in YOLO format.
+        resize (bool):
+            If True, resizes the icon to fit the specified width and height.
+        """
         if resize:
             iconmap = iconmap.resize((width,height), Image.LANCZOS)
         result = self.minimap.copy()
@@ -105,6 +190,22 @@ class Minimap:
             })
     
     def dicc_icon_to_image(self,kind,can_repeat=False):
+        """
+        Returns a random icon from the dictionary of icons based on the specified kind.
+
+        Parameters:
+        ----------
+        kind (str):
+            The category of icons to select from (e.g., "nex_", "tower_", "inhib_").
+        can_repeat (bool):
+            If True, allows the same icon to be selected multiple times; otherwise, it will not
+            select an icon that has already been placed on the minimap.
+        
+        Returns:
+        -------
+        Image:
+            The selected icon as a PIL Image.
+        """
         if not hasattr(self,"dict_icons"):
             self.dicc_icons = {
                 "nex_":{
@@ -167,17 +268,13 @@ class Minimap:
         path = self.dicc_icons[kind][selected_icon]
         return Image.open(path).convert("RGBA")
     
-    def create_items_map(self):        
+    def create_items_map(self):
+        """
+        Creates the minimap by placing various game elements such as nexus, towers, inhibitors, jungle items, and champions.
+        It randomly selects icons for each element and places them on the minimap at specified positions.
+        """
+
         # Nexus
-        """
-        {
-            "name": "nex_1",
-            "x": 446,
-            "y": 42,
-            "width": 24,
-            "height": 30
-        }
-        """
         nexus = [nexo for nexo in self.position_item_dict if nexo["name"].startswith("nex_")]
         for nexo in nexus:
             random_nexo = self.dicc_icon_to_image("nex_")
@@ -190,7 +287,6 @@ class Minimap:
         )
         
         # Towers
-        
         towers = [tower for tower in self.position_item_dict if tower["name"].startswith("tower_")]
         
         for tower in towers:
@@ -203,8 +299,7 @@ class Minimap:
                 name="tower"
             )
         
-        # Inhib
-        
+        # Inhibitors
         inhibs = [inhib for inhib in self.position_item_dict if inhib["name"].startswith("inhib_")]
         
         for inhib in inhibs:
@@ -217,7 +312,6 @@ class Minimap:
                 name="inhibitor")
     
         # Jungle items
-        
         jungle_dir = './utils/icons/jungle'
         jungle_items = [f for f in os.listdir(jungle_dir) if not f == "blue_red.png"] 
         np.random.shuffle(jungle_items)
@@ -240,7 +334,7 @@ class Minimap:
                     resize=True
                     )
 
-        # 5) Campeones (10 aleatorios, sin repetición)
+        # Characters
         champ_names = list(self.character_dir.keys())
         selected = random.sample(champ_names, min(15, len(champ_names)))
         red_recall = Image.open("./utils/recall/red_recall.png").convert("RGBA")
@@ -248,23 +342,19 @@ class Minimap:
         W, H = self.minimap.size
 
         for champ in selected:
-            # 1) Cargar y redimensionar
             path = os.path.join(self.dest_dir, f"square_{champ}.png")
             icon = Image.open(path).convert("RGBA")
             icon = icon.resize((45, 45), Image.LANCZOS)
             w, h = icon.size
 
-            # 2) Máscara circular
             mask = Image.new("L", (w, h), 0)
             mdraw = ImageDraw.Draw(mask)
             mdraw.ellipse((0, 0, w, h), fill=255)
             icon.putalpha(mask)
 
-            # 3) Posición aleatoria
             x = random.randint(0, W - w)
             y = random.randint(0, H - h)
 
-            # 4) Pegar el icono
             self.insert_element(
                 x=x, y=y,
                 width=w, height=h,
@@ -272,8 +362,7 @@ class Minimap:
                 name=champ
             )
 
-            # 5) Trazar el borde sobre la imagen ACTUALIZADA
-            draw = ImageDraw.Draw(self.minimap)       # <<-- Mueve esto DENTRO del bucle
+            draw = ImageDraw.Draw(self.minimap)
             cx, cy = x + w / 2, y + h / 2
             r = w / 2
             
@@ -290,7 +379,6 @@ class Minimap:
                     
             
         # Pings
-
         ping_dir = "./utils/pings"
         ping_files = [f for f in os.listdir(ping_dir) if f.lower().endswith(".png")]
         selected_pings = random.sample(ping_files, k=20) 
@@ -311,13 +399,12 @@ class Minimap:
                 name="ping"
             )
 
-        
-        
-            
-        
-            
+    
     def load_character_dir(self):
-        """Lee la carpeta de iconos y genera el diccionario campeón→id."""
+        """
+        Loads the character directory from the destination square directory.
+        It creates a dictionary mapping champion names to their IDs based on the filenames in the directory.
+        """
         self.character_dir = {}
         for fn in os.listdir(self.dest_dir):
             if fn.startswith("square_") and fn.lower().endswith(".png"):
@@ -326,6 +413,10 @@ class Minimap:
 
 
     def extract_squares(self):
+        """
+        Extracts champion icons from the source directory and saves them to the destination directory.
+        It copies files that start with "square_" and do not contain "generic" in their names.
+        """
         os.makedirs(self.dest_dir, exist_ok=True)
         count = 0
         for root, _, files in os.walk(self.source_dir):
@@ -342,31 +433,39 @@ class Minimap:
         print(f"✅ Copiados {count} archivos a '{self.dest_dir}'")
     
     def save_yolo_labels(self, output_folder, image=True,ignore_labels = ["nexus","inhibitor","nexo"]):
-        image_id = str(uuid.uuid4())[:8]
+        """
+        Saves the minimap image and its corresponding YOLO format labels to the specified output folder.
+        
+        Parameters:
+        ----------
+        output_folder (str):
+            The directory where the minimap image and labels will be saved.
+        image (bool):
+            If True, saves the minimap image; otherwise, only saves the labels.
+        ignore_labels (list):
+            List of labels to ignore when saving YOLO labels.
+        """
+        """ 
+        Careful with this, less than 16 can generate colision with 30k minimaps
+        Colision probability is 1/2^64, so it's very low.
+        """
+        image_id = str(uuid.uuid4())[:16]
         width, height = self.minimap.size
 
-        # 1) Guardar imagen
         if image:
             img_path = os.path.join(output_folder, f"{image_id}.png")
             self.minimap.save(img_path)
 
-        # 2) Etiquetas
         label_path = os.path.join(output_folder, f"{image_id}.txt")
         with open(label_path, "w") as f:
             for obj in self.objects_in_image:
                 name = obj["name"]
-                # 2.1) Ignorar etiquetas
                 if any(name == ign or name.startswith(ign) for ign in ignore_labels):
                     continue
-
-                # 2.2) Determinar clase
                 if name in getattr(self, "character_dir", {}):
                     cls = self.character_dir[name]
                 else:
                     continue
-                
-
-                # 2.3) Normalizar bbox
                 x = obj["x"]; y = obj["y"]
                 w = obj["width"]; h = obj["height"]
                 x_center = (x + w / 2) / width
@@ -378,25 +477,22 @@ class Minimap:
     
     def downgrade_resolution(self, scale_factor=0.4):
         """
-        Reduce la calidad visual de self.minimap simulando baja resolución.
-
-        :param scale_factor: Escala a la que se reducirá la imagen (0.3 = 30%)
-        :param apply_blur: Si True, aplica un leve desenfoque para simular compresión
+        Downgrades the resolution of the minimap by scaling it down and then back up.
+        This simulates a lower resolution while maintaining the overall structure of the minimap.
         """
-        from PIL import ImageFilter
 
         original_size = self.minimap.size
         new_size = (int(original_size[0] * scale_factor), int(original_size[1] * scale_factor))
-
-        # 1. Escalar hacia abajo
         downgraded = self.minimap.resize(new_size, Image.BILINEAR)
-
-        
-        # 3. Escalar de vuelta al tamaño original
         self.minimap = downgraded.resize(original_size, Image.BILINEAR)
 
     
     def save_character_json(self):
+        """
+        Saves the character directory to a JSON file.
+        This file contains the mapping of champion names to their IDs.
+        """
+
         if not self.character_dir:
             raise RuntimeError("self.character_dir está vacío; asegúrate de haber llamado a load_character_dir() o extract_squares().")
 
@@ -406,6 +502,11 @@ class Minimap:
 
 
 if __name__ == "__main__":
+    """
+    Main function to generate minimaps for training.
+    It creates a specified number of minimaps, saves them in a directory, and prints the completion message.
+    """
+    
     print("\n🧠 Generación de minimapas para entrenamiento")
     print("────────────────────────────────────────────\n")
     
@@ -415,10 +516,10 @@ if __name__ == "__main__":
     NUM_MAPS = 5000
 
     for i in tqdm(range(NUM_MAPS), desc="🗺️ Generando minimapas", ncols=100):
-        minimap = Minimap()
+        minimap = Minimap(extract_s=i==0)
         minimap.save_yolo_labels(output_folder, image=True) 
 
     print("\n✅ Generación finalizada: {} minimapas guardados en '{}'".format(NUM_MAPS, output_folder)) 
-    # Minimap().save_character_json()
+
 
    

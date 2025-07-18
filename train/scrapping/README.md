@@ -1,4 +1,4 @@
-🧠 Data Trainer
+🧠 Scrapping
 
 This section of the project is responsible for downloading all the necessary assets to train a computer vision model using YOLOv11.
 

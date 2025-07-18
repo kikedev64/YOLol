@@ -1,16 +1,19 @@
-#!/usr/bin/env python3
+
 import os
 import cv2
 from tqdm import tqdm
 
 def extract_frames_instant(video_path, interval_s: int = 30):
     """
-    Extrae un frame cada `interval_s` segundos de video_path (.mkv)
-    de forma instantánea (sin reproducir) y los guarda en:
-      video/frames/<nombre_del_video>/*.png
-    con máxima calidad (PNG, sin compresión).
+    Extract frames from a video at specified intervals and save them as PNG files.
+    Parameters:
+    ----------
+    video_path (str): 
+        Path to the video file.
+    interval_s (int): 
+        Interval in seconds at which to extract frames.
     """
-    # Preparar carpeta de salida
+
     parent = os.path.dirname(video_path)
     frames_root = os.path.join(parent, "frames")
     os.makedirs(frames_root, exist_ok=True)
@@ -18,18 +21,15 @@ def extract_frames_instant(video_path, interval_s: int = 30):
     frames_dir = os.path.join(frames_root, name)
     os.makedirs(frames_dir, exist_ok=True)
 
-    # Abrir vídeo
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"[ERROR] No se pudo abrir: {video_path}")
         return
-
-    # Parámetros vídeo
+    
     fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     duration_s = total_frames / fps
 
-    # Calcular índices de frame a extraer
     times = list(range(0, int(duration_s) + 1, interval_s))
     frame_indices = [int(t * fps) for t in times]
 
@@ -38,12 +38,12 @@ def extract_frames_instant(video_path, interval_s: int = 30):
     for idx, frame_no in tqdm(enumerate(frame_indices, 1),
                               total=len(frame_indices),
                               desc=name):
-        # Ir directo al frame
+        
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
         ret, frame = cap.read()
         if not ret:
             continue
-        # Guardar PNG sin compresión
+
         out_path = os.path.join(frames_dir, f"{name}_{times[idx-1]:04d}.png")
         cv2.imwrite(out_path, frame, [cv2.IMWRITE_PNG_COMPRESSION, 0])
 
@@ -51,12 +51,16 @@ def extract_frames_instant(video_path, interval_s: int = 30):
     print(f"✅ Guardados en: {frames_dir}\n")
 
 def main():
+    """
+    Main function to extract frames from all .mkv files in the 'video' directory.
+    It processes each video file, extracting frames at specified intervals and saving them in a structured directory
+    """
+    
     video_folder = os.path.join(os.getcwd(), "video")
     if not os.path.isdir(video_folder):
         print("[ERROR] No hay carpeta 'video/' aquí.")
         return
 
-    # Solo .mkv
     mkvs = [f for f in os.listdir(video_folder) if f.lower().endswith(".mkv")]
     if not mkvs:
         print("[INFO] No hay archivos .mkv en 'video/'.")

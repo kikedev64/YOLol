@@ -1,4 +1,8 @@
-// === Export Layer Bounds to JSON (Compatible with Photoshop ExtendScript) ===
+/*
+Script to export Photoshop layer information as JSON.
+This script collects all visible layers in the active document,
+ignoring those that start with "_ignore", and outputs their names, positions, and dimensions in JSON format.
+*/
 
 var doc = app.activeDocument;
 var json = "[\n";
