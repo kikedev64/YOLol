@@ -213,3 +213,6 @@ data_train/
 *.png
 !shadow_map.png
 *.txt
+
+# Videos
+video/
