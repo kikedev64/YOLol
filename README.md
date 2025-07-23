@@ -179,17 +179,24 @@ Extracts frames from `.mkv` video files containing full matches. These frames ar
 ### Expected Structure:
 ```
 YOLol/
-├── video/
-│   ├── game1.mkv
-│   ├── game2.mkv
+└── video_training/
+    ├── video/
+    │   ├── game1.mkv
+    │   ├── game2.mkv
+    ├── extract_frames.py
 ```
 
 ### Output:
 ```
 YOLol/
-└── frames/
-    ├── game1/
-    ├── game2/
+└── video_training/
+    ├── video/
+    │   ├── game1.mkv
+    │   ├── game2.mkv
+    ├── extract_frames.py
+    └── frames/
+            ├── game1/
+            └── game2/
 ```
 
 ### Usage:
