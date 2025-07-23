@@ -5,7 +5,7 @@ from ultralytics import YOLO
 
 def main():
     # Carga tu modelo entrenado
-    model = YOLO("E:/Repositorios/LeagueIA/train_vision/train_model/models/characters_models/FirstModelWorking/LeagueIAModel/weights/best.pt")
+    model = YOLO("E:/Repositorios/LeagueIA/train_model/models/characters_models/FirstModelWorking/LeagueIAModel/weights/best.pt")
 
     # Crear ventana redimensionable con tamaño inicial 1280x720 (16:9)
     win_name = "Detección Minimap LoL"
