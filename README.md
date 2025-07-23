@@ -4,6 +4,8 @@
 
 This system is designed for training AI models or performing visual match analysis through minimap frames.
 
+![Minimap](assets/minimap.gif)
+
 It has been trained on over **30,000 automatically generated images** to recognize the following champions:
 
 - Aatrox
@@ -224,19 +226,21 @@ pip install -r ./requirements.txt
 ## 📌 Project Status
 - ✅ Frame extraction completed
 - ✅ Synthetic minimap dataset generation completed
-- 🔄 Object detection model training (in progress)
+- ✅ Object detection model training (in progress)
 
 ---
 
 ## 📂 Project Structure
 ```
 YOLol/
-├── video/               # Source match videos
-├── frames/              # Extracted video frames
-├── train_images/        # Synthetic labeled minimap dataset
-├── extract_frames.py    # Frame extractor script
-├── minimap_generator.py # Minimap annotation generator
-└── README.md            # This file
+├── assets/               # Visual assets like the README GIF
+├── minimap_generator/    # Full automation pipeline for minimap generation
+├── results/              # Latest trained YOLO model (ready to use)
+├── scrapping/            # Scripts to download assets from Riot's CDN and Dragon raw
+├── train_model/          # Codebase for training the YOLO model
+├── video_training/       # Script to auto-extract frames from video at set intervals
+└── README.md             # This file
+
 ```
 
 ---
