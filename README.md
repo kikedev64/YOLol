@@ -1,18 +1,18 @@
-# 🧠 LolNet: Real-Time Strategy Prediction from League of Legends
+# 🧠 YOLol: Minimap Computer Vision for League of Legends
 
-**LolNet** is a project that leverages computer vision and deep learning to analyze the current state of a League of Legends match and predict the best possible moves in real time.
+**YOLol** is a project that uses **computer vision** to automatically analyze the **minimap** in League of Legends matches, extracting valuable information about the location of champions and other critical game elements.
 
-The project consists of the following main components:
+This system is designed for training AI models or performing visual match analysis through minimap frames.
 
 ---
 
 ## 🎞️ 1. Frame Extractor (`extract_frames.py`)
 
-Extracts image frames from `.mkv` match recordings at fixed intervals. These frames serve as the raw visual input for training the AI model.
+Extracts frames from `.mkv` video files containing full matches. These frames are used to detect and analyze champion positions on the minimap.
 
-### Input Directory:
+### Expected Structure:
 ```
-LolNet/
+YOLol/
 ├── video/
 │   ├── game1.mkv
 │   ├── game2.mkv
@@ -20,69 +20,58 @@ LolNet/
 
 ### Output:
 ```
-LolNet/
+YOLol/
 └── frames/
     ├── game1/
     ├── game2/
 ```
 
-### How to Use:
+### Usage:
 ```bash
 python extract_frames.py
 ```
 
 ---
 
-## 🗺️ 2. Minimap Dataset Generator
+## 🗺️ 2. Minimap Dataset Generator (`minimap_generator.py`)
 
-Programmatically generates synthetic minimap images with labeled annotations, simulating game elements like turrets, inhibitors, champions, pings, and fog of war. Each minimap is saved with a 16-character UUID to ensure uniqueness and is exported in a YOLO-compatible format for object detection models.
+This component generates a synthetic dataset simulating the minimap with YOLO annotations representing:
+- Champion positions (allies and enemies)
+- Towers and inhibitors
+- Other visual elements like fog of war, pings, or structures
 
+Each image is saved with a unique 16-character UUID and an accompanying `.txt` file in YOLO format.YOLol
 ---
 
-## 🧠 3. Neural Network Inference Engine *(WIP)*
+## 🚀 Objective
 
-Uses the extracted visual data to feed a neural network capable of:
-- Understanding the current map state.
-- Predicting optimal team decisions and player actions.
-- Providing real-time strategy suggestions during gameplay or replay analysis.
+The goal of **YOLol** is to build an automated computer vision system capable of accurately identifying **champions on the minimap** of League of Legends matches, for later use in analytics, movement prediction, or automated learning.
 
 ---
-
-## 🚀 Goal
-
-The ultimate aim of **LolNet** is to build an intelligent system that observes a game of League of Legends and acts as a strategic assistant — learning from past matches and making tactical predictions as the game unfolds.
 
 ## 🛠️ Dependencies
 ```bash
-pip install opencv-python tqdm
+pip install -r ./requirements.txt
 ```
-
-> More modules like PyTorch, Ultralytics (YOLO), and others will be required as the model and inference components are integrated.
-
----
-
-## 📌 Status
-- ✅ Dataset generation complete
-- ✅ Frame extraction complete
-- 🔄 Real-time strategy prediction (in progress)
+> Integration with PyTorch, YOLO (Ultralytics), and other training/detection tools is planned.
 
 ---
 
-## 👤 Author
-Developed by a League of Legends enthusiast with a passion for AI, vision systems, and real-time game analytics.
-
-Feel free to contribute or use this project as a foundation for your own League-related AI research.
+## 📌 Project Status
+- ✅ Frame extraction completed
+- ✅ Synthetic minimap dataset generation completed
+- 🔄 Object detection model training (in progress)
 
 ---
 
 ## 📂 Project Structure
 ```
-LolNet/
-├── video/               # Source .mkv match videos
-├── frames/              # Extracted frames from match videos
-├── train_images/        # Synthetic minimap dataset (YOLO format)
+YOLol/
+├── video/               # Source match videos
+├── frames/              # Extracted video frames
+├── train_images/        # Synthetic labeled minimap dataset
 ├── extract_frames.py    # Frame extractor script
-├── minimap_generator.py # Minimap dataset generator
+├── minimap_generator.py # Minimap annotation generator
 └── README.md            # This file
 ```
 
@@ -93,12 +82,12 @@ LolNet/
 This project is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** license.
 
 You are free to:
-- **Share** — copy and redistribute the material in any medium or format
+- **Share** — copy and redistribute the material
 - **Adapt** — remix, transform, and build upon the material
 
 Under the following terms:
-- **Attribution** — You must give appropriate credit to the author.
+- **Attribution** — You must give appropriate credit.
 - **NonCommercial** — You may not use the material for commercial purposes.
-- **ShareAlike** — If you remix, transform, or build upon the material, you must distribute your contributions under the same license.
+- **ShareAlike** — You must distribute your contributions under the same license.
 
-For full license text, visit: [https://creativecommons.org/licenses/by-nc-sa/4.0/](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+Full license: [https://creativecommons.org/licenses/by-nc-sa/4.0/](https://creativecommons.org/licenses/by-nc-sa/4.0/)
